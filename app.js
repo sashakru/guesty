@@ -8,6 +8,7 @@ const readyFileAsync = promisify(fs.readFile);
 module.exports.default = () => {
     const app = express();
 
+    app.set('port', (process.env.PORT || 5000));
     app.use(express.static(path.join(__dirname, 'public')));
     app.set('view engine', 'ejs');
 
@@ -23,7 +24,7 @@ module.exports.default = () => {
           });
     });
 
-    app.listen(3000, function () {
-        console.log('Example app listening on port 3000!')
+    app.listen(app.get('port'), function () {
+        console.log(`Example app listening on port ${app.get('port')}!`)
     });
 };
