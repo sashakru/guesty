@@ -12,6 +12,8 @@ module.exports.default = () => {
     app.set('view engine', 'ejs');
 
     app.get('/', function (req, res) {
+
+        console.log('reading file from: ', path.join(__dirname, './public/data.json'));
         readyFileAsync(path.join(__dirname, './public/data.json'), 'utf8')
           .then(data => {
               console.log('JSON.parse(data).length', JSON.parse(data).slice(0, 4002).length)
