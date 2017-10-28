@@ -1,56 +1,71 @@
 const fs = require('fs');
 const path = require('path');
 const {promisify} = require('util');
-const normalize =  require('normalize-to-range');
-
-
 const _ = require('lodash');
 const utils = require('../utils');
-
 const airbnbService = require('./airbnb');
-
 const CONSTANTS = require('../constants/index');
 
 const writeFileAsync = promisify(fs.writeFile);
+
 let totalData = [];
+let maxDemandScore = Number.NEGATIVE_INFINITY;
+let minDemandScore = Number.POSITIVE_INFINITY;
 
-const calcDemandScore = (listing) => {
-    const result = normalize([listing.star_rating, listing.star_rating]); //0.1 * listing.star_rating ;
-    console.log('calcDemandScore result: ', result);
+const calcDemandScore = (listing) => (
+  0.2 * listing.star_rating +
+  0.3 * (listing.bathrooms / listing.person_capacity) +
+  0.3 * (listing.beds / listing.person_capacity) +
+  0.2 * (listing.bedrooms / listing.person_capacity)
+);
 
-    return result;
-}
+const saveMinMaxDemandScore = (ds) => {
+    if (ds > maxDemandScore) maxDemandScore = ds;
+    if (ds < minDemandScore) minDemandScore = ds;
+};
 
-const mapData = (data) =>
-  data.map(obj => {
+const mapDataToDemandedPoints = (data) =>
+  data.map(({listing}) => {
+      const demandScore = calcDemandScore(listing);
+      saveMinMaxDemandScore(demandScore);
       return {
-          lat: obj.listing.lat,
-          lng: obj.listing.lng,
-          ds: calcDemandScore(obj)
+          lat: listing.lat,
+          lng: listing.lng,
+          ds: demandScore
       }
   });
 
+const normalizeDemandScore = (points) => {
+    const demandScoreDelta = maxDemandScore - minDemandScore;
+    return points.map(point => {
+        point.ds = (point.ds - minDemandScore) / demandScoreDelta;
+        return point;
+    });
+};
+
 const createAndSaveDataAsJSON = (data) => {
     try {
-        console.log('createAndSaveDataAsJSON data.length', data.length)
         const json = JSON.stringify(data);
-
         return writeFileAsync(
-          path.resolve(__dirname, '../public/data.json'),
+          path.resolve(__dirname, `..${CONSTANTS.DATA_FILE_PATH}`),
           json,
           'utf8'
         );
     } catch (err) {
+        //err handle
     }
 };
 
 const init = (location) => {
+    console.log('Start init data process, be patient...');
+
     return dataFetch(
       location,
       utils.calcMinPrice(),
       utils.calcMaxPrice()
     )
-      .then(mapData)
+      .then(mapDataToDemandedPoints)
+      .then(normalizeDemandScore)
       .then(createAndSaveDataAsJSON)
 };
 
@@ -71,7 +86,8 @@ const dataFetch = (location, priceMin, priceMax) => {
               ...totalData,
               ...(_.compact(_.flatten(responses)))
           ];
-          console.log('totalData.length', totalData.length);
+
+          console.log('Data received, total data length: ', totalData.length);
 
           return totalData.length > CONSTANTS.REQUIRED_DATA_LENGTH ?
             totalData :

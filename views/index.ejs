@@ -24,21 +24,18 @@
         });
     }
 
-    // Heatmap data: 500 Points
     function getPoints() {
-        return sashaTestData.map(function (data) {
+        var points = <%- JSON.stringify(points) %>;
+        return points.map(function (point) {
             return {
-                location: new google.maps.LatLng(data.lat, data.lng),
-                weight: data.ds
+                location: new google.maps.LatLng(point.lat, point.lng),
+                weight: point.ds
             };
         })
     }
 </script>
 <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAMX1bbuUIFRVhCJkuz3d8o_w4ayFyRVqk&libraries=visualization&callback=initMap">
-</script>
-<script>
-    var sashaTestData = <%- JSON.stringify(data) %>;
 </script>
 </body>
 </html>
