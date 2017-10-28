@@ -60,7 +60,7 @@ const init = (location) => {
     console.log('Start init data process, be patient...');
 
     return dataFetch(
-      location,
+      location || CONSTANTS.CITY,
       utils.calcMinPrice(),
       utils.calcMaxPrice()
     )
