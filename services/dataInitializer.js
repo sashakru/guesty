@@ -24,7 +24,7 @@ const calcDemandScore = (listing, lastMonthAvailability) => {
       0.1 * (listing.bedrooms / listing.person_capacity) +
       0.2 * (listing.bathrooms / listing.person_capacity) +
       0.2 * (listing.beds / listing.person_capacity) +
-      0.6 * (totalBookedDatesCount / CONSTANTS.DAYS_IN_MONTH)
+      0.4 * (totalBookedDatesCount / CONSTANTS.DAYS_IN_MONTH)
     );
 };
 
