@@ -126,6 +126,9 @@ const fetchPropertiesAvailability = (properties) => {
                 });
           })
         ).then(() => {
+            startFrom += reqChunkLength;
+            end += reqChunkLength;
+
             return startFrom < properties.length ?
               delay(2000).then(requestHandler)
               : properties;

@@ -33,7 +33,6 @@ const getPropertyAvailability = (id, startDate, endDate) => {
         },
     }).then(response => response.calendar_days)
       .catch(() => {
-        console.log('Airbnd sever is down, I will try to get availability one more time for: ', id);
         return getPropertyAvailability(id, startDate, endDate);
     });
 };
